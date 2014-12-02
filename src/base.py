@@ -18,15 +18,18 @@ class LineDescription(str):
         idx, data = value
         obj = super(LineDescription, cls).__new__(cls, idx)
         obj.data = data
+        obj.idx = idx
         return obj
 
-    # def __repr__(self):
-    #     return self + self.data
+    def __str__(self):
+        s = ' '.join(map(str, self.data))
+        return ' %15s' % s
 
 
 class BaseLine(Series):
     def _get_repr(self, name=False, print_header=False, length=True, dtype=True, na_rep='NaN', float_format=None):
-        return ''.join([STRING_REPRESENTATION[i] for _, i in self.iteritems()])
+        out = ''.join([str(self.name), '|'] + [STRING_REPRESENTATION[i] for _, i in self.iteritems()])
+        return out
 
 
 class BaseCrossword(pd.DataFrame):
@@ -144,6 +147,7 @@ class BaseCrossword(pd.DataFrame):
                   justify=None, line_width=None, max_rows=None, max_cols=None,
                   show_dimensions=False):
         _buf = buf if buf is not None else StringIO()
+        _buf.write('                 ______________________________________________________________________\n')
         for _, row in self.iterrows():
             _buf.write('%s\n' % row.to_string())
         if buf is None:
