@@ -7,8 +7,6 @@ class Line(BaseLine):
     zones = []
 
     def _find_unknown_zones(self):
-        def zero(*args):
-            return 1
         self.zones = []
         s, e = None, None
         in_zone = False

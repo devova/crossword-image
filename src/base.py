@@ -21,14 +21,14 @@ class LineDescription(str):
         obj.idx = idx
         return obj
 
-    def __str__(self):
+    def to_string(self):
         s = ' '.join(map(str, self.data))
         return ' %15s' % s
 
 
 class BaseLine(Series):
     def _get_repr(self, name=False, print_header=False, length=True, dtype=True, na_rep='NaN', float_format=None):
-        out = ''.join([str(self.name), '|'] + [STRING_REPRESENTATION[i] for _, i in self.iteritems()])
+        out = ''.join([self.name.to_string(), '|'] + [STRING_REPRESENTATION[i] for _, i in self.iteritems()])
         return out
 
 
