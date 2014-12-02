@@ -4,10 +4,13 @@ from pandas.core.series import Series
 from pandas.core.index import Index
 from pandas.compat import StringIO
 
-FILLED = 'x'
-EMPTY = '.'
-UNDEFINED = ' '
-STRING_REPRESENTATION = (UNDEFINED, EMPTY, FILLED)
+FILLED = 2
+EMPTY = 1
+UNKNOWN = 0
+FILLED_STR = 'x'
+EMPTY_STR = '.'
+UNKNOWN_STR = ' '
+STRING_REPRESENTATION = {UNKNOWN: UNKNOWN_STR, EMPTY: EMPTY_STR, FILLED: FILLED_STR}
 
 
 class Line(Series):
@@ -20,10 +23,22 @@ class Line(Series):
         def zero(*args):
             return 1
         self.zones = []
-        self.zones = self.groupby(self, squeeze=True)
-        pass
-
-
+        s, e = None, None
+        in_zone = False
+        for i, v in enumerate(self.values):
+            if v == UNKNOWN:
+                e = i
+                if not in_zone:
+                    s = i
+                    in_zone = True
+            else:
+                if in_zone:
+                    in_zone = False
+                    self.zones.append((s, e))
+        if in_zone:
+            self.zones.append((s, e))
+        self.zones = pd.DataFrame(self.zones, columns=['start', 'end'])
+        self.zones['len'] = self.zones['end'] - self.zones['start'] + 1
 
 class BaseCrossword(pd.DataFrame):
     _constructor_sliced = Line
