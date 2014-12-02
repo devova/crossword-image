@@ -13,37 +13,41 @@ UNKNOWN_STR = ' '
 STRING_REPRESENTATION = {UNKNOWN: UNKNOWN_STR, EMPTY: EMPTY_STR, FILLED: FILLED_STR}
 
 
-class Line(Series):
-    zones = []
+class LineDescription(str):
+    def __new__(cls, value):
+        idx, data = value
+        obj = super(LineDescription, cls).__new__(cls, idx)
+        obj.data = data
+        return obj
 
+    # def __repr__(self):
+    #     return self + self.data
+
+
+class BaseLine(Series):
     def _get_repr(self, name=False, print_header=False, length=True, dtype=True, na_rep='NaN', float_format=None):
         return ''.join([STRING_REPRESENTATION[i] for _, i in self.iteritems()])
 
-    def _find_unknown_zones(self):
-        def zero(*args):
-            return 1
-        self.zones = []
-        s, e = None, None
-        in_zone = False
-        for i, v in enumerate(self.values):
-            if v == UNKNOWN:
-                e = i
-                if not in_zone:
-                    s = i
-                    in_zone = True
-            else:
-                if in_zone:
-                    in_zone = False
-                    self.zones.append((s, e))
-        if in_zone:
-            self.zones.append((s, e))
-        self.zones = pd.DataFrame(self.zones, columns=['start', 'end'])
-        self.zones['len'] = self.zones['end'] - self.zones['start'] + 1
 
 class BaseCrossword(pd.DataFrame):
-    _constructor_sliced = Line
+    _constructor_sliced = BaseLine
     p_index = None
     p_columns = None
+
+    def _getitem_column(self, key):
+        """ return the actual column """
+
+        # get column
+        key = str(key)
+        if self.columns.is_unique:
+            return self._get_item_cache(key)
+
+        # duplicate columns & possible reduce dimensionaility
+        result = self._constructor(self._data.get(key))
+        if result.columns.is_unique:
+            result = result[key]
+
+        return result
 
     def _ixs(self, i, axis=0):
         #irow
