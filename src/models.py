@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from base import BaseCrossword, BaseLine, LineDescription, UNKNOWN, EMPTY, FILLED
+from rules import RULES
 
 
 class Line(BaseLine):
@@ -39,3 +40,8 @@ class Crossword(BaseCrossword):
             _data = np.empty(shape, dtype=int)
             _data.fill(UNKNOWN)
         super().__init__(data=_data, index=p_index, columns=p_columns, dtype=dtype, copy=copy)
+
+    def solve_step(self):
+        for rule in RULES:
+            rule.df = self
+            rule.apply()
